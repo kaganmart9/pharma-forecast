@@ -1,0 +1,3 @@
+Target,MAE_before,MAE_after,MAE_improve(%),RMSE_before,RMSE_after,RMSE_improve(%),MAPE_before(%),MAPE_after(%),MAPE_improve(pp)
+N02BE,35.654,34.607,2.936,49.618,51.505,-3.803,18.068,17.894,0.174
+M01AB,6.468,6.478,-0.152,8.598,8.543,0.636,23.141,23.226,-0.085
