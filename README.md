@@ -93,13 +93,13 @@ The repository is organized to separate concerns, making it easy to navigate, ma
 
 **Key Components:**
 
- **`app.py`**: The entry point for the Streamlit interactive application. It handles the UI, loads models, and orchestrates the prediction and visualization logic.
- **`scripts/`**: Contains standalone Python scripts for core ML tasks.
-    - `train_and_export.py`: This script loads the processed data, performs a time-series split, trains a Gradient Boosting model for each target, and saves the serialized models to the `models/` directory.
-    - `predict_latest.py`: A command-line utility to load a model and generate predictions for the most recent data points, saving the output to the `results/` directory.
- **`models/`**: Stores the final, trained model artifacts (`.pkl` files). Keeping models separate from code allows them to be updated independently.
- **`data/`**: Contains the datasets used in the project. The `processed` subdirectory holds the feature-engineered data ready for model training.
- **`results/`**: A directory for storing outputs like model performance metrics and prediction CSVs.
+* **`app.py`**: The entry point for the Streamlit interactive application. It handles the UI, loads models, and orchestrates the prediction and visualization logic.
+* **`scripts/`**: Contains standalone Python scripts for core ML tasks.
+  * `train_and_export.py`: This script loads the processed data, performs a time-series split, trains a Gradient Boosting model for each target, and saves the serialized models to the `models/` directory.
+  * `predict_latest.py`: A command-line utility to load a model and generate predictions for the most recent data points, saving the output to the `results/` directory.
+* **`models/`**: Stores the final, trained model artifacts (`.pkl` files). Keeping models separate from code allows them to be updated independently.
+* **`data/`**: Contains the datasets used in the project. The `processed` subdirectory holds the feature-engineered data ready for model training.
+* **`results/`**: A directory for storing outputs like model performance metrics and prediction CSVs.
 
 ## Technical Workflow & Modeling
 
