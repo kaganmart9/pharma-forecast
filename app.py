@@ -18,6 +18,7 @@ DATA_DIR = BASE_DIR / "data" / "processed"
 MODELS_DIR = BASE_DIR / "models"
 
 FEATURES_CSV = DATA_DIR / "pharma_sales_features_v2_clean.csv"
+RAW_DATA_CSV = BASE_DIR / "data" / "raw" / "pharma_sales.csv"
 DATE_COL = "datum"
 TARGETS = ["N02BE", "M01AB"]
 
@@ -28,6 +29,28 @@ def load_canonical_features() -> pd.DataFrame:
     df = pd.read_csv(FEATURES_CSV)
     if DATE_COL in df.columns:
         df[DATE_COL] = pd.to_datetime(df[DATE_COL])
+    return df
+
+
+@st.cache_data(show_spinner=False)
+def load_raw_data() -> pd.DataFrame:
+    if not RAW_DATA_CSV.exists():
+        return pd.DataFrame()
+
+    df = pd.read_csv(RAW_DATA_CSV)
+
+    date_col_guess = None
+    if DATE_COL in df.columns:
+        date_col_guess = DATE_COL
+    elif "date" in df.columns:
+        date_col_guess = "date"
+
+    if date_col_guess:
+        try:
+            df[date_col_guess] = pd.to_datetime(df[date_col_guess], errors="coerce")
+        except Exception:
+            pass
+
     return df
 
 
@@ -192,9 +215,7 @@ def plot_interactive(df_pred: pd.DataFrame, title: str):
         margin=dict(l=30, r=20, t=60, b=30),
         height=420,
     )
-    # vertical grid lines at tick positions
     fig.update_xaxes(showgrid=True, gridcolor="#303552", tickformat="%Y-%m-%d")
-    # (keep y-grid from template for readability)
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -202,8 +223,41 @@ def plot_interactive(df_pred: pd.DataFrame, title: str):
 st.sidebar.header("Configuration")
 mode = st.sidebar.radio("Mode", ["Latest N weeks", "Forecast next N weeks"], index=0)
 tgt = st.sidebar.selectbox("Target", TARGETS, index=0)
-weeks = st.sidebar.slider("Weeks", min_value=4, max_value=26, value=12, step=1)
+
+# --- YENİ DEĞİŞİKLİK BURADA ---
+# Mode'a göre slider için max hafta sayısını dinamik olarak ayarla
+if mode == "Forecast next N weeks":
+    max_weeks = 15
+else:  # "Latest N weeks"
+    max_weeks = 56
+
+# Orijinal varsayılan değer (30), yeni max_weeks'ten (15) büyükse hata verir.
+# Bu yüzden varsayılan değeri, izin verilen max ile 30'un minimumu olarak ayarla.
+default_val = min(30, max_weeks)
+
+weeks = st.sidebar.slider(
+    "Weeks",
+    min_value=5,
+    max_value=max_weeks,  # Dinamik max değer
+    value=default_val,  # Hata vermeyen dinamik varsayılan değer
+    step=1,
+)
+# --- YENİ DEĞİŞİKLİK SONU ---
+
 uploaded = st.sidebar.file_uploader("Upload CSV (optional)", type=["csv"])
+
+st.sidebar.markdown("---")
+st.sidebar.info(
+    """
+    **CSV Upload Instructions**
+
+    The uploaded CSV must match the structure of the training data:
+    * Must include the date column: `datum` (format: `YYYY-MM-DD`).
+    * Should include target columns: `N02BE`, `M01AB` (if available for comparison).
+    * Must include all feature columns (lags, promo flags, etc.) used by the model.
+    * Missing columns/values will be imputed (FFill/BFill/Median), which may affect accuracy.
+    """
+)
 
 # choose data source
 if uploaded is not None:
@@ -222,12 +276,20 @@ try:
         plot_interactive(pred, f"{tgt} — Forecast Next {weeks} Weeks")
         st.subheader(f"Forecast Next {weeks} Weeks — {tgt}")
 
-    # predictions table inside an expander (collapsed by default)
     with st.expander("Predictions table (click to open)", expanded=False):
         st.dataframe(pred, use_container_width=True, hide_index=True)
 
-    with st.expander("Preview data (first 10 rows)", expanded=False):
+    with st.expander("Preview (Processed) data (first 10 rows)", expanded=False):
         st.dataframe(df_input.head(10), use_container_width=True)
+
+    with st.expander("Preview RAW data (first 10 rows)", expanded=False):
+        df_raw_preview = load_raw_data()
+        if not df_raw_preview.empty:
+            st.dataframe(df_raw_preview.head(10), use_container_width=True)
+        else:
+            st.info(
+                f"Raw data file (data/raw/pharma_sales.csv) not found in project directory."
+            )
 
     csv_bytes = pred.to_csv(index=False).encode("utf-8")
     st.download_button(
