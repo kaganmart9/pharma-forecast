@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 
 # -------------------------- App config --------------------------
 st.set_page_config(page_title="Pharma Forecast (GB)", layout="wide")
-st.title("🩺 Pharma Forecast — Gradient Boosting")
+st.title(" Pharma Forecast — Gradient Boosting")
 
 # -------------------------- Project paths (relative; no absolute printing) --------------------------
 BASE_DIR = Path(__file__).resolve().parent
