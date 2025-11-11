@@ -27,7 +27,7 @@ The key business outcomes include:
 
 ## Live Application Preview
 
-**[➡️ Access the Live Application Here](YOUR_STREAMLIT_APP_URL_HERE)**
+**[➡️ Access the Live Application Here](https://kaganmart9-pharma-forecast.streamlit.app/)**
 
 The final output of this project is an interactive Streamlit web application that allows business users to explore historical predictions and generate future forecasts without writing any code.
 
