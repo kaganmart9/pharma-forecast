@@ -1,0 +1,42 @@
+# .github/workflows/keep_awake.yml
+
+name: Keep Streamlit App Awake (Commit)
+
+on:
+  # Her 10 saatte bir bu görevi çalıştır
+  schedule:
+    - cron: '0 */10 * * *'
+  # İsteğe bağlı olarak elle çalıştırma izni verir
+  workflow_dispatch:
+
+# ... diğer ayarlar ...
+jobs:
+  keep_alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          # Streamlit'in yayınlandığı dalı belirtin
+          ref: main 
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Git Konfigürasyonu
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Boş Commit Oluşturma
+        run: |
+          # Commit'in içeriği önemli değil, sadece tarih değişmeli
+          echo "Streamlit app keep alive commit: $(date)" > .keep_alive
+          git add .keep_alive
+          
+          # Eğer dosya değiştiyse (yani 10 saat geçtiyse) commit yap
+          git commit -m "🤖 Streamlit Uyanık Tutma (Auto-Commit)" || echo "No changes to commit"
+          
+      - name: Commit'i Depoya Gönderme
+        # GitHub'ın kendi GITHUB_TOKEN'ını kullanıyoruz
+        # Daha önce izinleri "Read and write" yaptığımız için çalışacaktır
+        run: git push
