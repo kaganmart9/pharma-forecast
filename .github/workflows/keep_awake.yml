@@ -1,6 +1,4 @@
-# .github/workflows/keep_awake.yml
-
-name: Keep Streamlit App Awake (Commit)
+name: Streamlit App'i Uyanık Tut (Auto-Commit)
 
 on:
   # Her 10 saatte bir bu görevi çalıştır
@@ -9,21 +7,27 @@ on:
   # İsteğe bağlı olarak elle çalıştırma izni verir
   workflow_dispatch:
 
-# ... diğer ayarlar ...
+# **DÜZELTME 1:** Bu iş akışının repoya commit atabilmesi için
+# contents iznine 'write' yetkisi veriyoruz.
+permissions:
+  contents: write
+
 jobs:
   keep_alive:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Depoyu Çekme (Checkout)
         uses: actions/checkout@v4
         with:
           # Streamlit'in yayınlandığı dalı belirtin
           ref: main 
-          persist-credentials: false
+          # **DÜZELTME 2:** Kimlik bilgilerinin sonraki adımlarda kullanılabilmesi için
+          # persist-credentials: false satırını sildik (varsayılanı true'dur).
           fetch-depth: 0
 
       - name: Git Konfigürasyonu
         run: |
+          # Commit'i yapan kullanıcıyı GitHub Actions botu olarak ayarlıyoruz.
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
@@ -34,9 +38,10 @@ jobs:
           git add .keep_alive
           
           # Eğer dosya değiştiyse (yani 10 saat geçtiyse) commit yap
+          # || true yerine, başarılı bir şekilde commit yapılmazsa "No changes" yazdırıyoruz.
           git commit -m "🤖 Streamlit Uyanık Tutma (Auto-Commit)" || echo "No changes to commit"
           
       - name: Commit'i Depoya Gönderme
-        # GitHub'ın kendi GITHUB_TOKEN'ını kullanıyoruz
-        # Daha önce izinleri "Read and write" yaptığımız için çalışacaktır
-        run: git push
+        # **DÜZELTME 3:** Kimlik bilgileri artık otomatik olarak ayarlandığı için
+        # sadece origin/main dalına push yapmasını söylüyoruz.
+        run: git push origin main
