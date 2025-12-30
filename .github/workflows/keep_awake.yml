@@ -1,47 +1,15 @@
-name: Streamlit App'i Uyanık Tut (Auto-Commit)
+name: Streamlit Uyanık Tut (Ping Only)
 
 on:
-  # Her 10 saatte bir bu görevi çalıştır
   schedule:
-    - cron: '0 */10 * * *'
-  # İsteğe bağlı olarak elle çalıştırma izni verir
+    # Her 4 saatte bir siteye sinyal gönderir
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
-# **DÜZELTME 1:** Bu iş akışının repoya commit atabilmesi için
-# contents iznine 'write' yetkisi veriyoruz.
-permissions:
-  contents: write
-
 jobs:
-  keep_alive:
+  ping_site:
     runs-on: ubuntu-latest
     steps:
-      - name: Depoyu Çekme (Checkout)
-        uses: actions/checkout@v4
-        with:
-          # Streamlit'in yayınlandığı dalı belirtin
-          ref: main 
-          # **DÜZELTME 2:** Kimlik bilgilerinin sonraki adımlarda kullanılabilmesi için
-          # persist-credentials: false satırını sildik (varsayılanı true'dur).
-          fetch-depth: 0
-
-      - name: Git Konfigürasyonu
-        run: |
-          # Commit'i yapan kullanıcıyı GitHub Actions botu olarak ayarlıyoruz.
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-
-      - name: Boş Commit Oluşturma
-        run: |
-          # Commit'in içeriği önemli değil, sadece tarih değişmeli
-          echo "Streamlit app keep alive commit: $(date)" > .keep_alive
-          git add .keep_alive
-          
-          # Eğer dosya değiştiyse (yani 10 saat geçtiyse) commit yap
-          # || true yerine, başarılı bir şekilde commit yapılmazsa "No changes" yazdırıyoruz.
-          git commit -m "🤖 Streamlit Uyanık Tutma (Auto-Commit)" || echo "No changes to commit"
-          
-      - name: Commit'i Depoya Gönderme
-        # **DÜZELTME 3:** Kimlik bilgileri artık otomatik olarak ayarlandığı için
-        # sadece origin/main dalına push yapmasını söylüyoruz.
-        run: git push origin main
+      - name: Uygulamaya Ping At
+        # Aşağıdaki URL kısmına kendi Streamlit linkini yazmayı unutma!
+        run: curl https://kaganmart9-pharma-forecast.streamlit.app/
